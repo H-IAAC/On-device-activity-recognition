@@ -12,11 +12,21 @@ from tfltransfer import optimizers
 from tfltransfer.tflite_transfer_converter import TFLiteTransferConverter
 
 if __name__ == "__main__":
-    # Load the pre-process data. 
-    x = np.load("x.npy") # x should be of shape (number of instances, window size, number of axes)
-    y = np.load("y.npy") # y is a one-hot encoded representation of class labels.
+    # Load the pre-process data.
 
-    epochs = 15
+    # save np.load
+    np_load_old = np.load
+
+    # modify the default parameters of np.load
+    np.load = lambda *a, **k: np_load_old(*a, allow_pickle=True, **k)
+
+    x = np.load("data/X_train.npy") # x should be of shape (number of instances, window size, number of axes)
+    y = np.load("data/y_train.npy") # y is a one-hot encoded representation of class labels.
+
+    # restore np.load for future normal usage
+    np.load = np_load_old
+
+    epochs = 5
     batch_size = 32
     tflite_model = "par_model"
     tflite_ondevice_model = "par_ondevice"
@@ -39,12 +49,13 @@ if __name__ == "__main__":
     # --------------- on-device model conversion ---------------- #
     
     # on-device model configuration.
-    num_classes = 2
+    num_classes = 6
     learning_rate = 0.001
     batch_size = 5
     l2_rate = 0.0001
     hidden_units = 128
     input_shape = model.get_layer(encoder_layer).output.shape
+    input_shape = (1, 35,128)
 
     base = bases.SavedModelBase(tflite_model)
 
